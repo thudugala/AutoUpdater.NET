@@ -30,7 +30,7 @@ namespace AutoUpdaterTest
 
             //Uncomment below line to run update process using non administrator account.
 
-            //AutoUpdater.RunUpdateAsAdmin = false;
+            AutoUpdater.RunUpdateAsAdmin = false;
 
             //Uncomment below line to see russian version
 

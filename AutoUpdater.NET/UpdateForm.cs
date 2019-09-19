@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
-using Microsoft.Win32;
 
 namespace AutoUpdaterDotNET
 {
@@ -33,13 +33,13 @@ namespace AutoUpdaterDotNET
 
         public sealed override string Text
         {
-            get { return base.Text; }
-            set { base.Text = value; }
+            get => base.Text;
+            set => base.Text = value;
         }
 
         private void UseLatestIE()
         {
-            int ieValue = 0;
+            var ieValue = 0;
             switch (webBrowser.Version.Major)
             {
                 case 11:
@@ -63,7 +63,7 @@ namespace AutoUpdaterDotNET
             {
                 try
                 {
-                    using (RegistryKey registryKey =
+                    using (var registryKey =
                         Registry.CurrentUser.OpenSubKey(
                             @"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION",
                             true))
@@ -97,7 +97,7 @@ namespace AutoUpdaterDotNET
                 }
                 else
                 {
-                   webBrowser.Navigate(AutoUpdater.ChangelogURL);
+                    webBrowser.Navigate(AutoUpdater.ChangelogURL);
                 }
             }
 
@@ -126,7 +126,7 @@ namespace AutoUpdaterDotNET
 
         private void ButtonSkipClick(object sender, EventArgs e)
         {
-            using (RegistryKey updateKey = Registry.CurrentUser.CreateSubKey(AutoUpdater.RegistryLocation))
+            using (var updateKey = Registry.CurrentUser.CreateSubKey(AutoUpdater.RegistryLocation))
             {
                 if (updateKey != null)
                 {
@@ -160,13 +160,13 @@ namespace AutoUpdaterDotNET
                 }
             }
 
-            using (RegistryKey updateKey = Registry.CurrentUser.CreateSubKey(AutoUpdater.RegistryLocation))
+            using (var updateKey = Registry.CurrentUser.CreateSubKey(AutoUpdater.RegistryLocation))
             {
                 if (updateKey != null)
                 {
                     updateKey.SetValue("version", AutoUpdater.CurrentVersion);
                     updateKey.SetValue("skip", 0);
-                    DateTime remindLaterDateTime = DateTime.Now;
+                    var remindLaterDateTime = DateTime.Now;
                     switch (AutoUpdater.RemindLaterTimeSpan)
                     {
                         case RemindLaterFormat.Days:

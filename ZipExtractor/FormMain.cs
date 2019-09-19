@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using ZipExtractor.Properties;
 
@@ -13,7 +13,7 @@ namespace ZipExtractor
     public partial class FormMain : Form
     {
         private BackgroundWorker _backgroundWorker;
-        readonly StringBuilder _logBuilder = new StringBuilder();
+        private readonly StringBuilder _logBuilder = new StringBuilder();
 
         public FormMain()
         {
@@ -26,7 +26,7 @@ namespace ZipExtractor
             _logBuilder.AppendLine();
             _logBuilder.AppendLine("ZipExtractor started with following command line arguments.");
 
-            string[] args = Environment.GetCommandLineArgs();
+            var args = Environment.GetCommandLineArgs();
             for (var index = 0; index < args.Length; index++)
             {
                 var arg = args[index];
@@ -55,6 +55,7 @@ namespace ZipExtractor
                                 _logBuilder.AppendLine("Waiting for application process to Exit...");
 
                                 _backgroundWorker.ReportProgress(0, "Waiting for application to Exit...");
+                                process.Kill();
                                 process.WaitForExit();
                             }
                         }
@@ -64,15 +65,17 @@ namespace ZipExtractor
                         }
                     }
 
+                    Thread.Sleep(2000);
+
                     _logBuilder.AppendLine("BackgroundWorker started successfully.");
 
                     var path = Path.GetDirectoryName(args[2]);
 
                     // Open an existing zip file for reading.
-                    ZipStorer zip = ZipStorer.Open(args[1], FileAccess.Read);
+                    var zip = ZipStorer.Open(args[1], FileAccess.Read);
 
                     // Read the central directory collection.
-                    List<ZipStorer.ZipFileEntry> dir = zip.ReadCentralDir();
+                    var dir = zip.ReadCentralDir();
 
                     _logBuilder.AppendLine($"Found total of {dir.Count} files and folders inside the zip file.");
 
@@ -84,11 +87,32 @@ namespace ZipExtractor
                             zip.Close();
                             return;
                         }
+                                                
+                        var entry = dir[index];                        
+                        var attemptCount = 1;
+                        var tryAgain = true;
+                        while (tryAgain)
+                        {
+                            try
+                            {
+                                _logBuilder.AppendLine($"Extracting File {entry.FilenameInZip}, attempt {attemptCount}");
 
-                        ZipStorer.ZipFileEntry entry = dir[index];
-                        zip.ExtractFile(entry, Path.Combine(path, entry.FilenameInZip));
-                        string currentFile = string.Format(Resources.CurrentFileExtracting, entry.FilenameInZip);
-                        int progress = (index + 1) * 100 / dir.Count;
+                                zip.ExtractFile(entry, Path.Combine(path, entry.FilenameInZip));
+                                tryAgain = false;
+                            }
+                            catch
+                            {
+                                if(attemptCount > 10)
+                                {
+                                    throw;
+                                }
+                                attemptCount++;
+                                tryAgain = true;
+                                Thread.Sleep(2000);
+                            }
+                        }
+                        var currentFile = string.Format(Resources.CurrentFileExtracting, entry.FilenameInZip);
+                        var progress = (index + 1) * 100 / dir.Count;
                         _backgroundWorker.ReportProgress(progress, currentFile);
 
                         _logBuilder.AppendLine($"{currentFile} [{progress}%]");
@@ -117,7 +141,7 @@ namespace ZipExtractor
                             labelInformation.Text = @"Finished";
                             try
                             {
-                                ProcessStartInfo processStartInfo = new ProcessStartInfo(args[2]);
+                                var processStartInfo = new ProcessStartInfo(args[2]);
                                 if (args.Length > 3)
                                 {
                                     processStartInfo.Arguments = args[3];

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoUpdaterDotNET.Properties;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -9,7 +10,6 @@ using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
-using AutoUpdaterDotNET.Properties;
 
 namespace AutoUpdaterDotNET
 {
@@ -38,10 +38,10 @@ namespace AutoUpdaterDotNET
         private void DownloadUpdateDialogLoad(object sender, EventArgs e)
         {
             var uri = new Uri(_downloadURL);
-            
+
             if (uri.Scheme.Equals(Uri.UriSchemeFtp))
             {
-                _webClient = new MyWebClient {Credentials = AutoUpdater.FtpCredentials};
+                _webClient = new MyWebClient { Credentials = AutoUpdater.FtpCredentials };
             }
             else
             {
@@ -94,7 +94,7 @@ namespace AutoUpdaterDotNET
             else
             {
                 var timeSpan = DateTime.Now - _startedAt;
-                long totalSeconds = (long) timeSpan.TotalSeconds;
+                var totalSeconds = (long)timeSpan.TotalSeconds;
                 if (totalSeconds > 0)
                 {
                     var bytesPerSecond = e.BytesReceived / totalSeconds;
@@ -179,7 +179,7 @@ namespace AutoUpdaterDotNET
             var extension = Path.GetExtension(tempPath);
             if (extension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                string installerPath = Path.Combine(Path.GetDirectoryName(tempPath), "ZipExtractor.exe");
+                var installerPath = Path.Combine(Path.GetDirectoryName(tempPath), "ZipExtractor.exe");
 
                 try
                 {
@@ -193,10 +193,10 @@ namespace AutoUpdaterDotNET
                     return;
                 }
 
-                StringBuilder arguments =
+                var arguments =
                     new StringBuilder($"\"{tempPath}\" \"{Process.GetCurrentProcess().MainModule.FileName}\"");
-                string[] args = Environment.GetCommandLineArgs();
-                for (int i = 1; i < args.Length; i++)
+                var args = Environment.GetCommandLineArgs();
+                for (var i = 1; i < args.Length; i++)
                 {
                     if (i.Equals(1))
                     {
@@ -240,20 +240,25 @@ namespace AutoUpdaterDotNET
             {
                 _webClient = null;
                 if (exception.NativeErrorCode != 1223)
+                {
                     throw;
+                }
             }
 
             Close();
         }
 
-        private static String BytesToString(long byteCount)
+        private static string BytesToString(long byteCount)
         {
-            string[] suf = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
             if (byteCount == 0)
+            {
                 return "0" + suf[0];
-            long bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            }
+
+            var bytes = Math.Abs(byteCount);
+            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            var num = Math.Round(bytes / Math.Pow(1024, place), 1);
             return $"{(Math.Sign(byteCount) * num).ToString(CultureInfo.InvariantCulture)} {suf[place]}";
         }
 
@@ -266,9 +271,12 @@ namespace AutoUpdaterDotNET
                     if (hashAlgorithm != null)
                     {
                         var hash = hashAlgorithm.ComputeHash(stream);
-                        var fileChecksum = BitConverter.ToString(hash).Replace("-", String.Empty).ToLowerInvariant();
+                        var fileChecksum = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
 
-                        if (fileChecksum == checksum.ToLower()) return true;
+                        if (fileChecksum == checksum.ToLower())
+                        {
+                            return true;
+                        }
 
                         MessageBox.Show(Resources.FileIntegrityCheckFailedMessage,
                             Resources.FileIntegrityCheckFailedCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -302,23 +310,6 @@ namespace AutoUpdaterDotNET
             {
                 DialogResult = DialogResult.OK;
             }
-        }
-    }
-
-    /// <inheritdoc />
-    public class MyWebClient : WebClient
-    {
-        /// <summary>
-        ///     Response Uri after any redirects.
-        /// </summary>
-        public Uri ResponseUri;
-
-        /// <inheritdoc />
-        protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
-        {
-            WebResponse webResponse = base.GetWebResponse(request, result);
-            ResponseUri = webResponse.ResponseUri;
-            return webResponse;
         }
     }
 }
