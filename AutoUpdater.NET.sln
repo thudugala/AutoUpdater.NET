@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoUpdater", "AutoUpdater\AutoUpdater.csproj", "{05828E63-82A2-43AD-8E0A-DC91B386C003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp1", "WindowsFormsApp1\WindowsFormsApp1.csproj", "{E0AA5DF7-D1A1-4B58-9BE0-9361355E25BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoUpdater.ZipInstaller", "AutoUpdater.ZipInstaller\AutoUpdater.ZipInstaller.csproj", "{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,10 +52,10 @@ Global
 		{05828E63-82A2-43AD-8E0A-DC91B386C003}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05828E63-82A2-43AD-8E0A-DC91B386C003}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05828E63-82A2-43AD-8E0A-DC91B386C003}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0AA5DF7-D1A1-4B58-9BE0-9361355E25BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0AA5DF7-D1A1-4B58-9BE0-9361355E25BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0AA5DF7-D1A1-4B58-9BE0-9361355E25BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0AA5DF7-D1A1-4B58-9BE0-9361355E25BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

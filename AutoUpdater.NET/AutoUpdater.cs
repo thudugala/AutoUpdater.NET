@@ -9,7 +9,6 @@ using System.IO;
 using System.Net;
 using System.Net.Cache;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -732,115 +731,6 @@ namespace AutoUpdaterDotNET
             }
 
             return false;
-        }
-    }
-
-    /// <summary>
-    ///     Object of this class gives you all the details about the update useful in handling the update logic yourself.
-    /// </summary>
-    public class UpdateInfoEventArgs : EventArgs
-    {
-        /// <summary>
-        ///     If new update is available then returns true otherwise false.
-        /// </summary>
-        public bool IsUpdateAvailable { get; set; }
-
-        /// <summary>
-        ///     Download URL of the update file.
-        /// </summary>
-        public string DownloadURL { get; set; }
-
-        /// <summary>
-        ///     URL of the webpage specifying changes in the new update.
-        /// </summary>
-        public string ChangelogURL { get; set; }
-
-        /// <summary>
-        ///     Returns newest version of the application available to download.
-        /// </summary>
-        public Version CurrentVersion { get; set; }
-
-        /// <summary>
-        ///     Returns version of the application currently installed on the user's PC.
-        /// </summary>
-        public Version InstalledVersion { get; set; }
-
-        /// <summary>
-        ///     Shows if the update is required or optional.
-        /// </summary>
-        public bool Mandatory { get; set; }
-
-        /// <summary>
-        ///     Defines how the Mandatory flag should work.
-        /// </summary>
-        public Mode UpdateMode { get; set; }
-
-        /// <summary>
-        ///     Command line arguments used by Installer.
-        /// </summary>
-        public string InstallerArgs { get; set; }
-
-        /// <summary>
-        ///     Checksum of the update file.
-        /// </summary>
-        public string Checksum { get; set; }
-
-        /// <summary>
-        ///     Hash algorithm that generated the checksum provided in the XML file.
-        /// </summary>
-        public string HashingAlgorithm { get; set; }
-    }
-
-    /// <summary>
-    ///     An object of this class contains the AppCast file received from server.
-    /// </summary>
-    public class ParseUpdateInfoEventArgs : EventArgs
-    {
-        /// <summary>
-        ///     Remote data received from the AppCast file.
-        /// </summary>
-        public string RemoteData { get; }
-
-        /// <summary>
-        ///      Set this object with values received from the AppCast file.
-        /// </summary>
-        public UpdateInfoEventArgs UpdateInfo { get; set; }
-
-        /// <summary>
-        ///     An object containing the AppCast file received from server.
-        /// </summary>
-        /// <param name="remoteData">A string containing remote data received from the AppCast file.</param>
-        public ParseUpdateInfoEventArgs(string remoteData)
-        {
-            RemoteData = remoteData;
-        }
-    }
-
-    /// <summary>
-    ///     Provides Basic Authentication header for web request.
-    /// </summary>
-    public class BasicAuthentication
-    {
-        private string Username { get; }
-
-        private string Password { get; }
-
-        /// <summary>
-        /// Initializes credentials for Basic Authentication.
-        /// </summary>
-        /// <param name="username">Username to use for Basic Authentication</param>
-        /// <param name="password">Password to use for Basic Authentication</param>
-        public BasicAuthentication(string username, string password)
-        {
-            Username = username;
-            Password = password;
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            var token = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Username}:{Password}"));
-            return $"Basic {token}";
         }
     }
 }

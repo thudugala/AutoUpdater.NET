@@ -93,6 +93,7 @@
     <None Include="Resources\ZipExtractor.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
     <Content Include="ZipExtractor.ico" />
   </ItemGroup>
   <ItemGroup>
