@@ -31,11 +31,10 @@ namespace AutoUpdater.ZipInstaller
             var appAssembly = Assembly.LoadFrom(assemblyFilePath);
             var companyAttribute = GetAttribute<AssemblyCompanyAttribute>(appAssembly);
             var titleAttribute = GetAttribute<AssemblyTitleAttribute>(appAssembly);
-            var versionAttribute = GetAttribute<AssemblyVersionAttribute>(appAssembly);
 
             var appCompany = companyAttribute != null ? companyAttribute.Company : string.Empty;
             var appTitle = titleAttribute != null ? titleAttribute.Title : appAssembly.GetName().Name;
-            var appVersion = versionAttribute != null ? versionAttribute.Version : appAssembly.GetName().Version?.ToString();
+            var appVersion = appAssembly.GetName().Version?.ToString();
 
             logBuilder.AppendLine($"App Company [{appCompany}]");
             logBuilder.AppendLine($"App Title [{appTitle}]");
@@ -121,6 +120,19 @@ namespace AutoUpdater.ZipInstaller
                 var zipSetupFilePath = args[0];
                 var assemblyName = args[1];
                 var appExePath = args[2];
+
+                if (File.Exists(zipSetupFilePath))
+                {
+                    logBuilder.AppendLine($"[{zipSetupFilePath}] does not exist");
+                    return;
+                }
+
+                var extension = Path.GetExtension(zipSetupFilePath);
+                if (extension.ToUpperInvariant() != ".ZIP")
+                {
+                    logBuilder.AppendLine($"Wrong File type [{extension}], it need to be zip file.");
+                    return;
+                }
 
                 logBuilder.AppendLine("Started Installation");
 
