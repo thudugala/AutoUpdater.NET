@@ -1,5 +1,7 @@
 ﻿using Mohio.Shared;
+using System;
 using System.Diagnostics;
+using System.Net;
 
 namespace Mohio.Setup.Test
 {
@@ -16,6 +18,9 @@ namespace Mohio.Setup.Test
                     AppFolderName = "AutoUpdater",
                     AppVersionFolderNamePrefix = "AutoUpdater.Wpf.Test"
                 };
+
+                var uri = new Uri("");
+                Installer.Instance.UpdateInfoWebRequest = WebRequest.Create(uri);
 
                 Installer.Instance.Start(new ProcessStartInfo(), appInfor);
             }
