@@ -1,13 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.Globalization;
+using System.IO;
 using System.Reflection;
 
 namespace Mohio.Setup
 {
     public class AppInformation
     {
-        public string AppExecutableName { get; set; }
+        public static string AppFolderPath => Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
-        public string AppFolderPath => Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        public string AppExecutableName { get; set; }
 
         public string AppVersionFolderNamePrefix { get; set; }
 
@@ -15,14 +17,14 @@ namespace Mohio.Setup
         {
             if (string.IsNullOrWhiteSpace(AppExecutableName))
             {
-                throw new InvalidDataException($"{nameof(AppExecutableName)} missing");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.Missing, nameof(AppExecutableName)));
             }
             if (string.IsNullOrWhiteSpace(AppVersionFolderNamePrefix))
             {
-                throw new InvalidDataException($"{nameof(AppVersionFolderNamePrefix)} missing");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.Missing, nameof(AppVersionFolderNamePrefix)));
             }
 
-            if (AppVersionFolderNamePrefix.EndsWith("_") == false)
+            if (AppVersionFolderNamePrefix.EndsWith("_", StringComparison.InvariantCultureIgnoreCase) == false)
             {
                 AppVersionFolderNamePrefix += "_";
             }

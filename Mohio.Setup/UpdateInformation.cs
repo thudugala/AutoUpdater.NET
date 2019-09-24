@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 
 namespace Mohio.Setup
@@ -24,15 +25,15 @@ namespace Mohio.Setup
         {
             if (string.IsNullOrWhiteSpace(DownloadURL))
             {
-                throw new InvalidDataException($"{nameof(DownloadURL)} missing");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.Missing, nameof(DownloadURL)));
             }
             if (string.IsNullOrWhiteSpace(NewestVersionVersion))
             {
-                throw new InvalidDataException($"{nameof(NewestVersionVersion)} missing");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.Missing, nameof(NewestVersionVersion)));
             }
             if (string.IsNullOrWhiteSpace(Checksum))
             {
-                throw new InvalidDataException($"{nameof(Checksum)} missing");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.Missing, nameof(Checksum)));
             }
         }
 
@@ -50,7 +51,9 @@ namespace Mohio.Setup
 
                 return Version.Parse(NewestVersionVersion) > installedVersion;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return false;
             }

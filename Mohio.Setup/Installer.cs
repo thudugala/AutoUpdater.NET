@@ -1,6 +1,7 @@
-﻿using Mohio.Shared;
+﻿using Mohio.Core;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -28,19 +29,17 @@ namespace Mohio.Setup
                
         public async Task DownloadApp(AppInformation appInfo)
         {
-            try
+            if (appInfo is null)
             {
-                ServicePointManager.SecurityProtocol |= (SecurityProtocolType)192 |
-                                                        (SecurityProtocolType)768 | (SecurityProtocolType)3072;
+                throw new ArgumentNullException(nameof(appInfo));
             }
-            catch (NotSupportedException) { }
 
-            if (Directory.Exists(appInfo.AppFolderPath) == false)
+            if (Directory.Exists(AppInformation.AppFolderPath) == false)
             {
-                Directory.CreateDirectory(appInfo.AppFolderPath);
+                Directory.CreateDirectory(AppInformation.AppFolderPath);
 
                 // Wait untill download.
-                await DownloadAppTask(appInfo, new Version());
+                await DownloadAppTask(appInfo, new Version()).ConfigureAwait(false);
                 return;
             }
 
@@ -48,7 +47,7 @@ namespace Mohio.Setup
             if (maxVesion is null)
             {
                 // Wait untill download.
-                await DownloadAppTask(appInfo, maxVesion);
+                await DownloadAppTask(appInfo, maxVesion).ConfigureAwait(false);
             }
             else
             {
@@ -57,21 +56,21 @@ namespace Mohio.Setup
             }
         }
 
-        private string CalculateMD5(string filePath)
+        private static string CalculateCheckSum(string filePath)
         {
-            using (var md5 = MD5.Create())
+            using (var sha = SHA512.Create())
             {
                 using (var stream = File.OpenRead(filePath))
                 {
-                    var hash = md5.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
+                    var hash = sha.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "", StringComparison.InvariantCultureIgnoreCase).ToUpperInvariant();
                 }
             }
         }
 
         private async void DownloadApp(AppInformation appInfo, Version installedMaxVersion)
         {
-            await DownloadAppTask(appInfo, installedMaxVersion);
+            await DownloadAppTask(appInfo, installedMaxVersion).ConfigureAwait(false);
         }
 
         private async Task DownloadAppTask(AppInformation appInfo, Version installedMaxVersion)
@@ -83,20 +82,22 @@ namespace Mohio.Setup
                 var updateInfo = GetUpdateInfo();
                 if (updateInfo is null)
                 {
-                    throw new InvalidDataException($"Update Not Available");
+                    throw new InvalidDataException(Properties.Resources.UpdateNotAvailable);
                 }
                 updateInfo.Check();
                 if (updateInfo.IsUpdateAvailable(installedMaxVersion) == false)
                 {
-                    throw new InvalidDataException($"Update Not Available");
+                    throw new InvalidDataException(Properties.Resources.UpdateNotAvailable);
                 }
-                var zipSetupFilePath = await DownloadZip(updateInfo);
+                var zipSetupFilePath = await DownloadZip(updateInfo).ConfigureAwait(false);
 
-                var appVersionFolderPath = Path.Combine(appInfo.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}{updateInfo.NewestVersionVersion}");
+                var appVersionFolderPath = Path.Combine(AppInformation.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}{updateInfo.NewestVersionVersion}");
 
                 ZipFile.ExtractToDirectory(zipSetupFilePath, appVersionFolderPath, true);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Instance.TrackError(ex);
             }
@@ -110,7 +111,7 @@ namespace Mohio.Setup
         {
             if (DownloadWebClient is null)
             {
-                throw new InvalidDataException($"{nameof(DownloadWebClient)} is not set");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.NotSet, nameof(DownloadWebClient)));
             }
             DownloadWebClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
@@ -123,7 +124,7 @@ namespace Mohio.Setup
             {
                 File.Delete(zipSetupFilePath);
             }
-            await DownloadWebClient.DownloadFileTaskAsync(updateInfo.DownloadURL, zipSetupFilePath);
+            await DownloadWebClient.DownloadFileTaskAsync(updateInfo.DownloadURL, zipSetupFilePath).ConfigureAwait(false);
             if (File.Exists(zipSetupFilePath) == false)
             {
                 throw new FileNotFoundException($"[{zipSetupFilePath}] does not exist");
@@ -135,8 +136,8 @@ namespace Mohio.Setup
                 throw new FileNotFoundException($"Wrong File type [{extension}], it need to be zip file.");
             }
 
-            // use https://emn178.github.io/online-tools/md5_checksum.html
-            var checkSum = CalculateMD5(zipSetupFilePath);
+            // use https://emn178.github.io/online-tools/sha512_file_hash.html
+            var checkSum = CalculateCheckSum(zipSetupFilePath);
             if(updateInfo.Checksum.ToUpperInvariant() != checkSum)
             {
                 throw new FileNotFoundException($"Zip file integrity check failed, [{updateInfo.Checksum}/{checkSum}]");
@@ -145,9 +146,9 @@ namespace Mohio.Setup
             return zipSetupFilePath;
         }
 
-        private Version GetAppInstalledMaxVersion(AppInformation appInfo)
+        private static Version GetAppInstalledMaxVersion(AppInformation appInfo)
         {
-            var appVersionFolderPathList = Directory.GetDirectories(appInfo.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}*", SearchOption.TopDirectoryOnly).ToList();
+            var appVersionFolderPathList = Directory.GetDirectories(AppInformation.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}*", SearchOption.TopDirectoryOnly).ToList();
             if (appVersionFolderPathList.Any() == false)
             {
                 return null;
@@ -156,17 +157,17 @@ namespace Mohio.Setup
             return maxVesion;
         }
 
-        private string GetAppMaxVersionExePath(AppInformation appInfo)
+        private static string GetAppMaxVersionExePath(AppInformation appInfo)
         {
             var maxVesion = GetAppInstalledMaxVersion(appInfo);
             if (maxVesion is null)
             {
-                throw new FileNotFoundException($"{maxVesion} not found");
+                throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.NotFound, nameof(maxVesion)));
             }
-            var appVersionExePath = Path.Combine(appInfo.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}{maxVesion}", appInfo.AppExecutableName);
+            var appVersionExePath = Path.Combine(AppInformation.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}{maxVesion}", appInfo.AppExecutableName);
             if (File.Exists(appVersionExePath) == false)
             {
-                throw new FileNotFoundException($"{appVersionExePath} not found");
+                throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.NotFound, nameof(appVersionExePath)));
             }
             return appVersionExePath;
         }
@@ -175,7 +176,7 @@ namespace Mohio.Setup
         {
             if (UpdateInfoWebRequest is null)
             {
-                throw new InvalidDataException($"{nameof(UpdateInfoWebRequest)} is not set");
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.NotSet, nameof(UpdateInfoWebRequest)));
             }
             UpdateInfoWebRequest.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
@@ -198,8 +199,17 @@ namespace Mohio.Setup
             return updateInfo;
         }
 
-        public void RunApp(ProcessStartInfo process, AppInformation appInfo)
+        public static void RunApp(ProcessStartInfo process, AppInformation appInfo)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+            if (appInfo is null)
+            {
+                throw new ArgumentNullException(nameof(appInfo));
+            }
+
             var appVersionExePath = GetAppMaxVersionExePath(appInfo);
             process.FileName = appVersionExePath;
             Process.Start(process);
@@ -215,7 +225,7 @@ namespace Mohio.Setup
                 {                    
                     break;
                 }
-                await Task.Delay(2000);
+                await Task.Delay(2000).ConfigureAwait(false);
             }
             stopWatch.Stop();
         }

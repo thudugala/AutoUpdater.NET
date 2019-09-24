@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mohio.Shared
+namespace Mohio.Core
 {
     public class Logger
     {
@@ -22,7 +23,7 @@ namespace Mohio.Shared
             _logBuilder = new StringBuilder();
 
             _logBuilder.AppendLine("--------------------------------------------------------------");
-            _logBuilder.AppendLine(DateTime.Now.ToString("F"));
+            _logBuilder.AppendLine(DateTime.Now.ToString("F", CultureInfo.InvariantCulture));
             _logBuilder.AppendLine();
             _logBuilder.AppendLine($"{_assemblyName.Name} started [{_assemblyName.Version}]");
         }
@@ -40,7 +41,9 @@ namespace Mohio.Shared
                 {
                     File.AppendAllText(Path.Combine(folderPathBaseDirectory, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     var folderPathCommonApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
                     if (Directory.Exists(folderPathCommonApplicationData) == false)
@@ -83,7 +86,7 @@ namespace Mohio.Shared
             _logBuilder.Append(message);
         }
 
-        private (string errorMessage, string errorStackTrace) GetErrorData(Exception ex)
+        private static (string errorMessage, string errorStackTrace) GetErrorData(Exception ex)
         {
             var message = $"{ex.Message}";
             var stackTrace = $"{ex.StackTrace}";

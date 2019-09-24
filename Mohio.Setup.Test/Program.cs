@@ -1,4 +1,4 @@
-﻿using Mohio.Shared;
+﻿using Mohio.Core;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -22,16 +22,41 @@ namespace Mohio.Setup.Test
                 var uri = new Uri("https://raw.githubusercontent.com/thudugala/AutoUpdater.NET/master/Mohio.Setup.Test/UpdateInformation.json");
                 Installer.Instance.UpdateInfoWebRequest = WebRequest.Create(uri);
                 Installer.Instance.DownloadWebClient = new WebClient();
-                                
-                await Installer.Instance.DownloadApp(appInfo);
 
-                Installer.Instance.RunApp(new ProcessStartInfo(), appInfo);
+                try
+                {
+                    await Installer.Instance.DownloadApp(appInfo);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.TrackError(ex);
+                }
 
-                await Installer.Instance.WaitNewAppVerionToFinishDownload();
+                try
+                {
+                    Installer.Instance.RunApp(new ProcessStartInfo(), appInfo);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.TrackError(ex);
+                }
+
+                try
+                {
+                    await Installer.Instance.WaitNewAppVerionToFinishDownload();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.TrackError(ex);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                //Ignor
+                Logger.Instance.TrackError(ex);
+            }
+            finally
+            {
+                Logger.Instance.WriteLog();
             }
         }
     }
