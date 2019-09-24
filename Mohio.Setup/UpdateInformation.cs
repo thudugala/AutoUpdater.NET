@@ -14,7 +14,7 @@ namespace Mohio.Setup
         /// <summary>
         /// Download URL of the update file.
         /// </summary>
-        public string DownloadURL { get; set; }
+        public Uri DownloadURL { get; set; }
 
         /// <summary>
         /// Returns newest version of the application available to download.
@@ -23,7 +23,7 @@ namespace Mohio.Setup
 
         public void Check()
         {
-            if (string.IsNullOrWhiteSpace(DownloadURL))
+            if (DownloadURL is null)
             {
                 throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.Missing, nameof(DownloadURL)));
             }

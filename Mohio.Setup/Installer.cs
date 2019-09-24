@@ -115,9 +115,9 @@ namespace Mohio.Setup
             }
             DownloadWebClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
-            var url = new Uri(updateInfo.DownloadURL);
+            //var url = new Uri(updateInfo.DownloadURL);
 
-            var fileName = Path.GetFileName(url.LocalPath);
+            var fileName = Path.GetFileName(updateInfo.DownloadURL.LocalPath);
 
             var zipSetupFilePath = Path.Combine(Path.GetTempPath(), fileName);
             if (File.Exists(zipSetupFilePath))

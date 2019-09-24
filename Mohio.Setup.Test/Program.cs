@@ -34,7 +34,7 @@ namespace Mohio.Setup.Test
 
                 try
                 {
-                    Installer.Instance.RunApp(new ProcessStartInfo(), appInfo);
+                    Installer.RunApp(new ProcessStartInfo(), appInfo);
                 }
                 catch (Exception ex)
                 {

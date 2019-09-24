@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mohio.Shared\Mohio.Core.csproj" />
+    <ProjectReference Include="..\Mohio.Core\Mohio.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
