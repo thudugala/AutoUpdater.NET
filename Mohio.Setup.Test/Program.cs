@@ -3,12 +3,14 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Cache;
+using System.Threading.Tasks;
 
 namespace Mohio.Setup.Test
 {
     internal class Program
-    {
-        private static void Main(string[] args)
+    {       
+        
+        public static async Task Main(string[] args)
         {
             try
             {
@@ -29,8 +31,8 @@ namespace Mohio.Setup.Test
                 {
                     CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore)
                 };
-
-                Installer.Instance.Start(new ProcessStartInfo(), appInfor);
+                
+                await Installer.Instance.Start(new ProcessStartInfo(), appInfor);                
             }
             catch
             {

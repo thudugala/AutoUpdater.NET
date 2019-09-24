@@ -16,7 +16,7 @@ namespace Mohio.Setup
             new Lazy<Installer>(() => new Installer(),
                 System.Threading.LazyThreadSafetyMode.PublicationOnly);
 
-        public event EventHandler<UpdateInProgressEventArgs> UpdateInProgress;
+        private bool IsUpdateInProgress = true;
 
         public static Installer Instance => MySingleton.Value;
 
@@ -24,17 +24,17 @@ namespace Mohio.Setup
 
         public WebRequest UpdateInfoWebRequest { get; set; }
 
-        public async void Start(ProcessStartInfo process, AppInformation appInfor)
+        public async Task Start(ProcessStartInfo process, AppInformation appInfor)
         {
             try
             {
                 appInfor.CheckAndFix();
 
-                DownloadApp(appInfor);
-                var appVersionExePath = GetAppMaxVersionExePath(appInfor);
+                await DownloadApp(appInfor);
 
-                process.FileName = appVersionExePath;
-                Process.Start(process);
+                RunApp(process, appInfor);
+
+                await WaitUpdateTofinish();
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace Mohio.Setup
             }
         }
 
-        private void DownloadApp(AppInformation appInformation)
+        private async Task DownloadApp(AppInformation appInformation)
         {
             try
             {
@@ -60,32 +60,33 @@ namespace Mohio.Setup
                 Directory.CreateDirectory(appInformation.AppFolderPath);
 
                 // Wait untill download.
-                DownloadAppTask(appInformation, new Version(), true);
+                await DownloadAppTask(appInformation, new Version());
                 return;
             }
 
             var maxVesion = GetAppInstalledMaxVersion(appInformation);
-            if (maxVesion.ToString() == "0.0.0.0")
+            if (maxVesion is null)
             {
                 // Wait untill download.
-                DownloadAppTask(appInformation, maxVesion, true);
+                await DownloadAppTask(appInformation, maxVesion);
             }
             else
             {
                 // Don't wait, run exising app, Download new version is exist for next time.
-                DownloadAppTask(appInformation, maxVesion, false);
+                DownloadApp(appInformation, maxVesion);
             }
         }
-        
-        private void DownloadAppTask(AppInformation appInformation, Version installedMaxVersion, bool IsWaitingToFinish)
+
+        private async void DownloadApp(AppInformation appInformation, Version installedMaxVersion)
+        {
+            await DownloadAppTask(appInformation, installedMaxVersion);
+        }
+
+        private async Task DownloadAppTask(AppInformation appInformation, Version installedMaxVersion)
         {
             try
             {
-                UpdateInProgress?.Invoke(null, new UpdateInProgressEventArgs
-                {
-                    InProgress = true,
-                    IsWaitingToFinish = IsWaitingToFinish
-                });
+                IsUpdateInProgress = true;
 
                 var updateInfo = GetUpdateInfo();
                 if (updateInfo is null)
@@ -97,7 +98,7 @@ namespace Mohio.Setup
                 {
                     throw new InvalidDataException($"Update Not Available");
                 }
-                var zipSetupFilePath = DownloadZip(updateInfo);
+                var zipSetupFilePath = await DownloadZip(updateInfo);
 
                 var appVersionFolderPath = Path.Combine(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}{updateInfo.NewestVersionVersion}");
 
@@ -109,16 +110,11 @@ namespace Mohio.Setup
             }
             finally
             {
-                UpdateInProgress?.Invoke(null, new UpdateInProgressEventArgs
-                {
-                    InProgress = false,
-                    IsWaitingToFinish = IsWaitingToFinish
-                });
-                Logger.Instance.WriteLog();
+                IsUpdateInProgress = false;
             }
         }
 
-        private string DownloadZip(UpdateInformation updateInfo)
+        private async Task<string> DownloadZip(UpdateInformation updateInfo)
         {
             if (DownloadWebClient is null)
             {
@@ -134,7 +130,7 @@ namespace Mohio.Setup
             {
                 File.Delete(zipSetupFilePath);
             }
-            DownloadWebClient.DownloadFile(updateInfo.DownloadURL, zipSetupFilePath);
+            await DownloadWebClient.DownloadFileTaskAsync(updateInfo.DownloadURL, zipSetupFilePath);
             if (File.Exists(zipSetupFilePath) == false)
             {
                 throw new FileNotFoundException($"[{zipSetupFilePath}] does not exist");
@@ -154,7 +150,7 @@ namespace Mohio.Setup
             var appVersionFolderPathList = Directory.GetDirectories(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}*", SearchOption.TopDirectoryOnly).ToList();
             if (appVersionFolderPathList.Any() == false)
             {
-                return new Version();
+                return null;
             }
             var maxVesion = appVersionFolderPathList.Select(p => new Version(p.Split(appInformation.AppVersionFolderNamePrefix).LastOrDefault())).Max();
             return maxVesion;
@@ -163,6 +159,10 @@ namespace Mohio.Setup
         private string GetAppMaxVersionExePath(AppInformation appInformation)
         {
             var maxVesion = GetAppInstalledMaxVersion(appInformation);
+            if (maxVesion is null)
+            {
+                throw new FileNotFoundException($"{maxVesion} not found");
+            }
             var appVersionExePath = Path.Combine(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}{maxVesion}", appInformation.AppExecutableName);
             if (File.Exists(appVersionExePath) == false)
             {
@@ -195,6 +195,28 @@ namespace Mohio.Setup
                 webResponse.Close();
             }
             return updateInfo;
+        }
+
+        private void RunApp(ProcessStartInfo process, AppInformation appInfor)
+        {
+            var appVersionExePath = GetAppMaxVersionExePath(appInfor);
+            process.FileName = appVersionExePath;
+            Process.Start(process);
+        }
+
+        private async Task WaitUpdateTofinish()
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (IsUpdateInProgress)
+            {
+                if (stopWatch.Elapsed > TimeSpan.FromMinutes(10))
+                {                    
+                    break;
+                }
+                await Task.Delay(2000);
+            }
+            stopWatch.Stop();
         }
     }
 }
