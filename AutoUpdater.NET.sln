@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoUpdater.Wpf.Test", "AutoUpdater.Wpf.Test\AutoUpdater.Wpf.Test.csproj", "{243CC939-4231-4DF6-AE06-C31803F46B9C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mohio.Core", "Mohio.Shared\Mohio.Core.csproj", "{D307D9A7-F5BF-4527-A0ED-99015AE22385}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mohio.Core", "Mohio.Core\Mohio.Core.csproj", "{D307D9A7-F5BF-4527-A0ED-99015AE22385}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mohio.Setup", "Mohio.Setup\Mohio.Setup.csproj", "{EC8D9FF1-9B22-4443-803F-529BDAAF7F13}"
 EndProject
