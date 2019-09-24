@@ -1,15 +1,23 @@
-﻿using System;
+﻿using Mohio.Shared;
 using System.Diagnostics;
 
 namespace Mohio.Setup.Test
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             try
             {
-                Installer.Instance.Start(new ProcessStartInfo());
+                var appInfor = new AppInformation
+                {
+                    AppCompanyFolderName = "Thudugala",
+                    AppExecutableName = "AutoUpdater.Wpf.Test.exe",
+                    AppFolderName = "AutoUpdater",
+                    AppVersionFolderNamePrefix = "AutoUpdater.Wpf.Test"
+                };
+
+                Installer.Instance.Start(new ProcessStartInfo(), appInfor);
             }
             catch
             {
