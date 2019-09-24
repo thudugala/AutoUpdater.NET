@@ -19,7 +19,7 @@ namespace Mohio.Setup.Test
                     AppVersionFolderNamePrefix = "AutoUpdater.Wpf.Test"
                 };
 
-                var uri = new Uri("");
+                var uri = new Uri("https://raw.githubusercontent.com/thudugala/AutoUpdater.NET/master/Mohio.Setup.Test/UpdateInformation.json");
                 Installer.Instance.UpdateInfoWebRequest = WebRequest.Create(uri);
 
                 Installer.Instance.Start(new ProcessStartInfo(), appInfor);
