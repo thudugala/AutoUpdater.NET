@@ -5,6 +5,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -23,30 +25,8 @@ namespace Mohio.Setup
         public WebClient DownloadWebClient { get; set; }
 
         public WebRequest UpdateInfoWebRequest { get; set; }
-
-        public async Task Start(ProcessStartInfo process, AppInformation appInfor)
-        {
-            try
-            {
-                appInfor.CheckAndFix();
-
-                await DownloadApp(appInfor);
-
-                RunApp(process, appInfor);
-
-                await WaitUpdateTofinish();
-            }
-            catch (Exception ex)
-            {
-                Logger.Instance.TrackError(ex);
-            }
-            finally
-            {
-                Logger.Instance.WriteLog();
-            }
-        }
-
-        private async Task DownloadApp(AppInformation appInformation)
+               
+        public async Task DownloadApp(AppInformation appInfo)
         {
             try
             {
@@ -55,34 +35,46 @@ namespace Mohio.Setup
             }
             catch (NotSupportedException) { }
 
-            if (Directory.Exists(appInformation.AppFolderPath) == false)
+            if (Directory.Exists(appInfo.AppFolderPath) == false)
             {
-                Directory.CreateDirectory(appInformation.AppFolderPath);
+                Directory.CreateDirectory(appInfo.AppFolderPath);
 
                 // Wait untill download.
-                await DownloadAppTask(appInformation, new Version());
+                await DownloadAppTask(appInfo, new Version());
                 return;
             }
 
-            var maxVesion = GetAppInstalledMaxVersion(appInformation);
+            var maxVesion = GetAppInstalledMaxVersion(appInfo);
             if (maxVesion is null)
             {
                 // Wait untill download.
-                await DownloadAppTask(appInformation, maxVesion);
+                await DownloadAppTask(appInfo, maxVesion);
             }
             else
             {
                 // Don't wait, run exising app, Download new version is exist for next time.
-                DownloadApp(appInformation, maxVesion);
+                DownloadApp(appInfo, maxVesion);
             }
         }
 
-        private async void DownloadApp(AppInformation appInformation, Version installedMaxVersion)
+        private string CalculateMD5(string filePath)
         {
-            await DownloadAppTask(appInformation, installedMaxVersion);
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    var hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant();
+                }
+            }
         }
 
-        private async Task DownloadAppTask(AppInformation appInformation, Version installedMaxVersion)
+        private async void DownloadApp(AppInformation appInfo, Version installedMaxVersion)
+        {
+            await DownloadAppTask(appInfo, installedMaxVersion);
+        }
+
+        private async Task DownloadAppTask(AppInformation appInfo, Version installedMaxVersion)
         {
             try
             {
@@ -100,7 +92,7 @@ namespace Mohio.Setup
                 }
                 var zipSetupFilePath = await DownloadZip(updateInfo);
 
-                var appVersionFolderPath = Path.Combine(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}{updateInfo.NewestVersionVersion}");
+                var appVersionFolderPath = Path.Combine(appInfo.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}{updateInfo.NewestVersionVersion}");
 
                 ZipFile.ExtractToDirectory(zipSetupFilePath, appVersionFolderPath, true);
             }
@@ -120,6 +112,7 @@ namespace Mohio.Setup
             {
                 throw new InvalidDataException($"{nameof(DownloadWebClient)} is not set");
             }
+            DownloadWebClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
             var url = new Uri(updateInfo.DownloadURL);
 
@@ -142,28 +135,34 @@ namespace Mohio.Setup
                 throw new FileNotFoundException($"Wrong File type [{extension}], it need to be zip file.");
             }
 
+            var checkSum = CalculateMD5(zipSetupFilePath);
+            if(updateInfo.Checksum != checkSum)
+            {
+                throw new FileNotFoundException($"Zip file integrity check failed, [{updateInfo.Checksum}/{checkSum}]");
+            }
+
             return zipSetupFilePath;
         }
 
-        private Version GetAppInstalledMaxVersion(AppInformation appInformation)
+        private Version GetAppInstalledMaxVersion(AppInformation appInfo)
         {
-            var appVersionFolderPathList = Directory.GetDirectories(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}*", SearchOption.TopDirectoryOnly).ToList();
+            var appVersionFolderPathList = Directory.GetDirectories(appInfo.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}*", SearchOption.TopDirectoryOnly).ToList();
             if (appVersionFolderPathList.Any() == false)
             {
                 return null;
             }
-            var maxVesion = appVersionFolderPathList.Select(p => new Version(p.Split(appInformation.AppVersionFolderNamePrefix).LastOrDefault())).Max();
+            var maxVesion = appVersionFolderPathList.Select(p => new Version(p.Split(appInfo.AppVersionFolderNamePrefix).LastOrDefault())).Max();
             return maxVesion;
         }
 
-        private string GetAppMaxVersionExePath(AppInformation appInformation)
+        private string GetAppMaxVersionExePath(AppInformation appInfo)
         {
-            var maxVesion = GetAppInstalledMaxVersion(appInformation);
+            var maxVesion = GetAppInstalledMaxVersion(appInfo);
             if (maxVesion is null)
             {
                 throw new FileNotFoundException($"{maxVesion} not found");
             }
-            var appVersionExePath = Path.Combine(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}{maxVesion}", appInformation.AppExecutableName);
+            var appVersionExePath = Path.Combine(appInfo.AppFolderPath, $"{appInfo.AppVersionFolderNamePrefix}{maxVesion}", appInfo.AppExecutableName);
             if (File.Exists(appVersionExePath) == false)
             {
                 throw new FileNotFoundException($"{appVersionExePath} not found");
@@ -177,6 +176,7 @@ namespace Mohio.Setup
             {
                 throw new InvalidDataException($"{nameof(UpdateInfoWebRequest)} is not set");
             }
+            UpdateInfoWebRequest.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
             var webResponse = UpdateInfoWebRequest.GetResponse();
 
@@ -197,14 +197,14 @@ namespace Mohio.Setup
             return updateInfo;
         }
 
-        private void RunApp(ProcessStartInfo process, AppInformation appInfor)
+        public void RunApp(ProcessStartInfo process, AppInformation appInfo)
         {
-            var appVersionExePath = GetAppMaxVersionExePath(appInfor);
+            var appVersionExePath = GetAppMaxVersionExePath(appInfo);
             process.FileName = appVersionExePath;
             Process.Start(process);
         }
 
-        private async Task WaitUpdateTofinish()
+        public async Task WaitNewAppVerionToFinishDownload()
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();

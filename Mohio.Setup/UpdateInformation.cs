@@ -6,12 +6,17 @@ namespace Mohio.Setup
     public class UpdateInformation
     {
         /// <summary>
-        ///     Download URL of the update file.
+        /// Checksum of the update file.
+        /// </summary>
+        public string Checksum { get; set; }
+
+        /// <summary>
+        /// Download URL of the update file.
         /// </summary>
         public string DownloadURL { get; set; }
 
         /// <summary>
-        ///     Returns newest version of the application available to download.
+        /// Returns newest version of the application available to download.
         /// </summary>
         public string NewestVersionVersion { get; set; }
 
@@ -24,6 +29,10 @@ namespace Mohio.Setup
             if (string.IsNullOrWhiteSpace(NewestVersionVersion))
             {
                 throw new InvalidDataException($"{nameof(NewestVersionVersion)} missing");
+            }
+            if (string.IsNullOrWhiteSpace(Checksum))
+            {
+                throw new InvalidDataException($"{nameof(Checksum)} missing");
             }
         }
 

@@ -33,13 +33,22 @@ namespace Mohio.Shared
         {
             Task.Run(() =>
             {
-                var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
-                if (Directory.Exists(folderPath) == false)
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
                 _logBuilder.AppendLine("--------------------------------------------------------------");
-                File.AppendAllText(Path.Combine(folderPath, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+
+                var folderPathBaseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                try
+                {
+                    File.AppendAllText(Path.Combine(folderPathBaseDirectory, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+                }
+                catch
+                {
+                    var folderPathCommonApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
+                    if (Directory.Exists(folderPathCommonApplicationData) == false)
+                    {
+                        Directory.CreateDirectory(folderPathCommonApplicationData);
+                    }
+                    File.AppendAllText(Path.Combine(folderPathCommonApplicationData, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+                }
             });
         }
 
