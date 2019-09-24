@@ -135,8 +135,9 @@ namespace Mohio.Setup
                 throw new FileNotFoundException($"Wrong File type [{extension}], it need to be zip file.");
             }
 
+            // use https://emn178.github.io/online-tools/md5_checksum.html
             var checkSum = CalculateMD5(zipSetupFilePath);
-            if(updateInfo.Checksum != checkSum)
+            if(updateInfo.Checksum.ToUpperInvariant() != checkSum)
             {
                 throw new FileNotFoundException($"Zip file integrity check failed, [{updateInfo.Checksum}/{checkSum}]");
             }
