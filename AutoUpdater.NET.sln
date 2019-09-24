@@ -24,7 +24,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoUpdater", "AutoUpdater\AutoUpdater.csproj", "{05828E63-82A2-43AD-8E0A-DC91B386C003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoUpdater.ZipInstaller", "AutoUpdater.ZipInstaller\AutoUpdater.ZipInstaller.csproj", "{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoUpdater.ZipInstaller", "AutoUpdater.ZipInstaller\AutoUpdater.ZipInstaller.csproj", "{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoUpdater.Wpf.Test", "AutoUpdater.Wpf.Test\AutoUpdater.Wpf.Test.csproj", "{243CC939-4231-4DF6-AE06-C31803F46B9C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mohio.Shared", "Mohio.Shared\Mohio.Shared.csproj", "{D307D9A7-F5BF-4527-A0ED-99015AE22385}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mohio.Setup", "Mohio.Setup\Mohio.Setup.csproj", "{EC8D9FF1-9B22-4443-803F-529BDAAF7F13}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mohio.Setup.Test", "Mohio.Setup.Test\Mohio.Setup.Test.csproj", "{765C54B2-ACDF-4414-BFE4-7D76E2AE6F48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +64,22 @@ Global
 		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2DA4EB1-BE6A-4FAF-9A38-408A3A6FF3FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{243CC939-4231-4DF6-AE06-C31803F46B9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{243CC939-4231-4DF6-AE06-C31803F46B9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{243CC939-4231-4DF6-AE06-C31803F46B9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{243CC939-4231-4DF6-AE06-C31803F46B9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D307D9A7-F5BF-4527-A0ED-99015AE22385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D307D9A7-F5BF-4527-A0ED-99015AE22385}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D307D9A7-F5BF-4527-A0ED-99015AE22385}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D307D9A7-F5BF-4527-A0ED-99015AE22385}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC8D9FF1-9B22-4443-803F-529BDAAF7F13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC8D9FF1-9B22-4443-803F-529BDAAF7F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC8D9FF1-9B22-4443-803F-529BDAAF7F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC8D9FF1-9B22-4443-803F-529BDAAF7F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{765C54B2-ACDF-4414-BFE4-7D76E2AE6F48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{765C54B2-ACDF-4414-BFE4-7D76E2AE6F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{765C54B2-ACDF-4414-BFE4-7D76E2AE6F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{765C54B2-ACDF-4414-BFE4-7D76E2AE6F48}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
