@@ -30,7 +30,7 @@ namespace Mohio.Setup
             {
                 appInfor.CheckAndFix();
 
-                await DownloadApp(appInfor);
+                DownloadApp(appInfor);
                 var appVersionExePath = GetAppMaxVersionExePath(appInfor);
 
                 process.FileName = appVersionExePath;
@@ -46,7 +46,7 @@ namespace Mohio.Setup
             }
         }
 
-        private async Task DownloadApp(AppInformation appInformation)
+        private void DownloadApp(AppInformation appInformation)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace Mohio.Setup
                 Directory.CreateDirectory(appInformation.AppFolderPath);
 
                 // Wait untill download.
-                await DownloadAppTask(appInformation, new Version(), true);
+                DownloadAppTask(appInformation, new Version(), true);
                 return;
             }
 
@@ -68,21 +68,16 @@ namespace Mohio.Setup
             if (maxVesion.ToString() == "0.0.0.0")
             {
                 // Wait untill download.
-                await DownloadAppTask(appInformation, maxVesion, true);
+                DownloadAppTask(appInformation, maxVesion, true);
             }
             else
             {
                 // Don't wait, run exising app, Download new version is exist for next time.
-                DownloadApp(appInformation, maxVesion);
+                DownloadAppTask(appInformation, maxVesion, false);
             }
         }
-
-        private async void DownloadApp(AppInformation appInformation, Version installedMaxVersion)
-        {
-            await DownloadAppTask(appInformation, installedMaxVersion, false);
-        }
-
-        private async Task DownloadAppTask(AppInformation appInformation, Version installedMaxVersion, bool IsWaitingToFinish)
+        
+        private void DownloadAppTask(AppInformation appInformation, Version installedMaxVersion, bool IsWaitingToFinish)
         {
             try
             {
@@ -102,7 +97,7 @@ namespace Mohio.Setup
                 {
                     throw new InvalidDataException($"Update Not Available");
                 }
-                var zipSetupFilePath = await DownloadZip(updateInfo);
+                var zipSetupFilePath = DownloadZip(updateInfo);
 
                 var appVersionFolderPath = Path.Combine(appInformation.AppFolderPath, $"{appInformation.AppVersionFolderNamePrefix}{updateInfo.NewestVersionVersion}");
 
@@ -119,10 +114,11 @@ namespace Mohio.Setup
                     InProgress = false,
                     IsWaitingToFinish = IsWaitingToFinish
                 });
+                Logger.Instance.WriteLog();
             }
         }
 
-        private async Task<string> DownloadZip(UpdateInformation updateInfo)
+        private string DownloadZip(UpdateInformation updateInfo)
         {
             if (DownloadWebClient is null)
             {
@@ -134,8 +130,12 @@ namespace Mohio.Setup
             var fileName = Path.GetFileName(url.LocalPath);
 
             var zipSetupFilePath = Path.Combine(Path.GetTempPath(), fileName);
-            await DownloadWebClient.DownloadFileTaskAsync(updateInfo.DownloadURL, zipSetupFilePath);
             if (File.Exists(zipSetupFilePath))
+            {
+                File.Delete(zipSetupFilePath);
+            }
+            DownloadWebClient.DownloadFile(updateInfo.DownloadURL, zipSetupFilePath);
+            if (File.Exists(zipSetupFilePath) == false)
             {
                 throw new FileNotFoundException($"[{zipSetupFilePath}] does not exist");
             }
