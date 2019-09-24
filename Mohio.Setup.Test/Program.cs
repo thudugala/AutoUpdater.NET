@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Cache;
 
 namespace Mohio.Setup.Test
 {
@@ -20,7 +21,14 @@ namespace Mohio.Setup.Test
                 };
 
                 var uri = new Uri("https://raw.githubusercontent.com/thudugala/AutoUpdater.NET/master/Mohio.Setup.Test/UpdateInformation.json");
+
                 Installer.Instance.UpdateInfoWebRequest = WebRequest.Create(uri);
+                Installer.Instance.UpdateInfoWebRequest.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
+
+                Installer.Instance.DownloadWebClient = new WebClient
+                {
+                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore)
+                };
 
                 Installer.Instance.Start(new ProcessStartInfo(), appInfor);
             }
