@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Mohio.Core
 {
@@ -29,29 +28,6 @@ namespace Mohio.Core
         }
 
         public static Logger Instance => MySingleton.Value;
-
-        public void WriteLog()
-        {
-            _logBuilder.AppendLine();            
-            _logBuilder.AppendLine("--------------------------------------------------------------");            
-            try
-            {
-                var folderPathBaseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-
-                File.AppendAllText(Path.Combine(folderPathBaseDirectory, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                var folderPathCommonApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
-                if (Directory.Exists(folderPathCommonApplicationData) == false)
-                {
-                    Directory.CreateDirectory(folderPathCommonApplicationData);
-                }
-                File.AppendAllText(Path.Combine(folderPathCommonApplicationData, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
-            }
-        }
 
         public void TrackError(Exception ex)
         {
@@ -82,6 +58,29 @@ namespace Mohio.Core
         public void TrackEvent(string message)
         {
             _logBuilder.AppendLine(message);
+        }
+
+        public void WriteLog()
+        {
+            _logBuilder.AppendLine();
+            _logBuilder.AppendLine("--------------------------------------------------------------");
+            try
+            {
+                var folderPathBaseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+                File.AppendAllText(Path.Combine(folderPathBaseDirectory, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                var folderPathCommonApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
+                if (Directory.Exists(folderPathCommonApplicationData) == false)
+                {
+                    Directory.CreateDirectory(folderPathCommonApplicationData);
+                }
+                File.AppendAllText(Path.Combine(folderPathCommonApplicationData, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+            }
         }
 
         private static (string errorMessage, string errorStackTrace) GetErrorData(Exception ex)
