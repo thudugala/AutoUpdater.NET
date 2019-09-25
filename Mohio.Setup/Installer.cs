@@ -34,14 +34,14 @@ namespace Mohio.Setup
                 throw new ArgumentNullException(nameof(appInfo));
             }
 
-            if (Directory.Exists(AppInformation.AppFolderPath) == false)
-            {
-                Directory.CreateDirectory(AppInformation.AppFolderPath);
+            //if (Directory.Exists(AppInformation.AppFolderPath) == false)
+            //{
+            //    Directory.CreateDirectory(AppInformation.AppFolderPath);
 
-                // Wait untill download.
-                await DownloadAppTask(appInfo, new Version()).ConfigureAwait(false);
-                return;
-            }
+            //    // Wait untill download.
+            //    await DownloadAppTask(appInfo, new Version()).ConfigureAwait(false);
+            //    return;
+            //}
 
             var maxVesion = GetAppInstalledMaxVersion(appInfo);
             if (maxVesion is null)
@@ -51,7 +51,7 @@ namespace Mohio.Setup
             }
             else
             {
-                // Don't wait, run exising app, Download new version is exist for next time.
+                // Don't wait, run exising app, Download new version if exist for next time.
                 DownloadApp(appInfo, maxVesion);
             }
         }
@@ -87,7 +87,7 @@ namespace Mohio.Setup
                 updateInfo.Check();
                 if (updateInfo.IsUpdateAvailable(installedMaxVersion) == false)
                 {
-                    throw new InvalidDataException(Properties.Resources.UpdateNotAvailable);
+                    Logger.Instance.TrackEvent(Properties.Resources.UpdateNotAvailable);
                 }
                 var zipSetupFilePath = await DownloadZip(updateInfo).ConfigureAwait(false);
 
@@ -114,12 +114,8 @@ namespace Mohio.Setup
                 throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Properties.Resources.NotSet, nameof(DownloadWebClient)));
             }
             DownloadWebClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-
-            //var url = new Uri(updateInfo.DownloadURL);
-
-            var fileName = Path.GetFileName(updateInfo.DownloadURL.LocalPath);
-
-            var zipSetupFilePath = Path.Combine(Path.GetTempPath(), fileName);
+                       
+            var zipSetupFilePath = Path.GetTempFileName();
             if (File.Exists(zipSetupFilePath))
             {
                 File.Delete(zipSetupFilePath);
@@ -129,13 +125,7 @@ namespace Mohio.Setup
             {
                 throw new FileNotFoundException($"[{zipSetupFilePath}] does not exist");
             }
-
-            var extension = Path.GetExtension(zipSetupFilePath);
-            if (extension.ToUpperInvariant() != ".ZIP")
-            {
-                throw new FileNotFoundException($"Wrong File type [{extension}], it need to be zip file.");
-            }
-
+                       
             // use https://emn178.github.io/online-tools/sha512_file_hash.html
             var checkSum = CalculateCheckSum(zipSetupFilePath);
             if(updateInfo.Checksum.ToUpperInvariant() != checkSum)

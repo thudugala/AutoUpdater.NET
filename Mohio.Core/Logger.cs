@@ -32,27 +32,25 @@ namespace Mohio.Core
 
         public void WriteLog()
         {
-            Task.Run(() =>
+            _logBuilder.AppendLine();            
+            _logBuilder.AppendLine("--------------------------------------------------------------");            
+            try
             {
-                _logBuilder.AppendLine("--------------------------------------------------------------");
-
                 var folderPathBaseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                try
-                {
-                    File.AppendAllText(Path.Combine(folderPathBaseDirectory, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
-                }
+
+                File.AppendAllText(Path.Combine(folderPathBaseDirectory, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch
+            catch
 #pragma warning restore CA1031 // Do not catch general exception types
+            {
+                var folderPathCommonApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
+                if (Directory.Exists(folderPathCommonApplicationData) == false)
                 {
-                    var folderPathCommonApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), _assemblyName.Name);
-                    if (Directory.Exists(folderPathCommonApplicationData) == false)
-                    {
-                        Directory.CreateDirectory(folderPathCommonApplicationData);
-                    }
-                    File.AppendAllText(Path.Combine(folderPathCommonApplicationData, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+                    Directory.CreateDirectory(folderPathCommonApplicationData);
                 }
-            });
+                File.AppendAllText(Path.Combine(folderPathCommonApplicationData, $"{_assemblyName.Name}.log"), _logBuilder.ToString());
+            }
         }
 
         public void TrackError(Exception ex)
@@ -83,7 +81,7 @@ namespace Mohio.Core
 
         public void TrackEvent(string message)
         {
-            _logBuilder.Append(message);
+            _logBuilder.AppendLine(message);
         }
 
         private static (string errorMessage, string errorStackTrace) GetErrorData(Exception ex)

@@ -11,7 +11,7 @@ namespace Mohio.Setup.Test
         public static async Task Main(string[] args)
         {
             try
-            {
+            {               
                 var appInfo = new AppInformation
                 {
                     AppExecutableName = "AutoUpdater.Wpf.Test.exe",
